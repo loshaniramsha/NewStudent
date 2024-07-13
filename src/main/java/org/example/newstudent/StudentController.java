@@ -27,6 +27,8 @@ public class StudentController extends HttpServlet {
 
     static String UPDATE_STUDENT = "UPDATE student SET name = ?, email = ?, city = ?, level = ? WHERE id = ?";
 
+    static String DELETE_STUDENT = "DELETE FROM student WHERE id = ?";
+
     @Override
     public void init() throws ServletException {
         try {
@@ -188,6 +190,22 @@ public class StudentController extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+        try {
+            var ps=this.connection.prepareStatement(DELETE_STUDENT);
+            var id= req.getParameter("id");
+            ps.setString(1,id);
+            if (ps.executeUpdate() !=0){
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                resp.getWriter().write("Student deleted successfully");
+            }
+            else {
+                resp.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+                resp.getWriter().write("Student not deleted");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
