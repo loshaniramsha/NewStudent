@@ -25,6 +25,8 @@ public class StudentController extends HttpServlet {
 
     static String GET_STUDENT = "SELECT * FROM student where id = ?";
 
+    static String UPDATE_STUDENT = "UPDATE student SET name = ?, email = ?, city = ?, level = ? WHERE id = ?";
+
     @Override
     public void init() throws ServletException {
         try {
@@ -155,7 +157,34 @@ public class StudentController extends HttpServlet {
 
     }
 
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            var ps= this.connection.prepareStatement(UPDATE_STUDENT);
+          /* var id= req.getParameter("id");*/
+           Jsonb jsonb=JsonbBuilder.create();
+           var updatedStudent=jsonb.fromJson(req.getReader(),StudentDTO.class);
+           ps.setString(1,updatedStudent.getName());
+           ps.setString(2,updatedStudent.getEmail());
+           ps.setString(3,updatedStudent.getCity());
+           ps.setString(4,updatedStudent.getLevel());
+           ps.setString(5,updatedStudent.getId());
 
+           if (ps.executeUpdate() !=0){
+               resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+               resp.getWriter().write("Student updated successfully");
+           }
+           else {
+               resp.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+               resp.getWriter().write("Student not updated");
+
+           }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
